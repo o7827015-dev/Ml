@@ -24,7 +24,7 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local Camera = Workspace.CurrentCamera
 local Mouse = LocalPlayer:GetMouse()
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-local Wi ndUI = nil
+local WindUI = nil
 pcall(
     function()
         Version = "1.6.53"
@@ -39,10 +39,10 @@ if WindUI then
     Window =
         WindUI:CreateWindow(
         {
-            Title = "yomo Test 🔫 | 0.1 | free ",
+            Title = "yomo 🔫 | 0.1 | free ",
             Icon = "cloud-lightning",
-            Author = "",
-            Folder = "yomohub Now",
+            Author = "mo",
+            Folder = "yomo Now",
             Size = UDim2.fromOffset(400, 200),
             Theme = "Dark",
             Transparent = true,
@@ -1354,7 +1354,7 @@ if Remote and Remote.FireServer then
         oldFire = hookfunction(Remote.FireServer, function(self, ...)
             if self ~= Remote then return oldFire(self, ...) end
             local args = {...}
-            ifSilentAimEnabled and args[2] == "shoot_gun" and CurrentTarget then
+            if SilentAimEnabled and args[2] == "shoot_gun" and CurrentTarget then
 		local head = CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("Head")
 		local hrp = CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart")
 		local humanoid = CurrentTarget.Character:FindFirstChild("Humanoid")
