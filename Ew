@@ -1350,34 +1350,48 @@ local function isShotgun()
 end
 local oldFire
 if Remote and Remote.FireServer then
-    local ok, res = pcall(function()
+    local ok = pcall(function()
         oldFire = hookfunction(Remote.FireServer, function(self, ...)
-            if self ~= Remote then return oldFire(self, ...) end
+            if self ~= Remote then 
+                return oldFire(self, ...) 
+            end
+
             local args = {...}
-            if SilentAimEnabled and args[2] == "shoot_gun" and CurrentTarget then
-		local head = CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("Head")
-		local hrp = CurrentTarget.Character and CurrentTarget.Character:FindFirstChild("HumanoidRootPart")
-		local humanoid = CurrentTarget.Character:FindFirstChild("Humanoid")
-		if head and humanoid and hrp then
-			local aimPos = predictPosition(head, hrp)
-			local displacement = aimPos - head.Position
-			local hitCFrame = CurrentTarget.Character:GetPivot() + displacement
-			local previousHealth = humanoid.Health
+            if SilentAimEnabled and args[2] == "shoot_gun" and CurrentTarget and CurrentTarget.Character then
+                local head = CurrentTarget.Character:FindFirstChild("Head")
+                local hrp = CurrentTarget.Character:FindFirstChild("HumanoidRootPart")
+                local humanoid = CurrentTarget.Character:FindFirstChild("Humanoid")
+                local myHead = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Head")
 
-			-- Check if target is behind a wall (calculated but not used for conditional logic in original; kept for potential future use)
-			local isObstructed = isBehindWall(LocalPlayer.Character.Head.Position, aimPos)
+                if head and hrp and humanoid and myHead and humanoid.Health > 0 then
+                    -- ✅ เดาตำแหน่งหัวด้วยความเร็ว + ping
+                    local ping = getPing()
+                    local predictedPos = head.Position + (hrp.Velocity * ping * 1.2)
 
-			args[4] = CFrame.new(math.huge, math.huge, math.huge)
+                    -- ✅ ทำให้กระสุนพุ่งไปที่ predictedPos
+                    args[4] = CFrame.new(myHead.Position, predictedPos)
 
-			args[5] = {
-				[1] = {
-					[1] = {
-						["Instance"] = head,
-						["Normal"] = Vector3.new(0, 1, 0),
-						["Position"] = aimPos
-					}
-				}
-			}
+                    -- ✅ สร้าง HitResult ให้ Remote มองว่าโดนหัว
+                    args[5] = {
+                        {
+                            {
+                                Instance = head,
+                                Position = predictedPos,
+                                Normal = (predictedPos - myHead.Position).Unit
+                            }
+                        }
+                    }
+                end
+            end
+
+            return oldFire(self, unpack(args))
+        end)
+    end)
+
+    if not ok then
+        warn("❌ Silent Aim hook failed")
+    end
+end
 
                     -- ✅ เอฟเฟกต์กระสุน
                     local success, beam = pcall(function()
